@@ -1,108 +1,123 @@
-# PaddleOCR Client-Side WASM (CodeIgniter 4 Integration)
+# PHP PaddleOCR WASM Example (CodeIgniter 4)
 
-Repositori ini berisi aplikasi web berbasis **CodeIgniter 4** yang mengimplementasikan **PaddleOCR secara 100% Client-Side (di dalam Browser)** menggunakan WebAssembly (WASM). 
-
-Dengan arsitektur ini, server PHP Anda tidak perlu memproses AI/OCR. Semua beban komputasi pemindaian gambar/PDF diringankan ke browser client menggunakan ONNX Runtime Web dan OpenCV.js.
+[Bahasa Indonesia](#bahasa-indonesia) | [English](#english)
 
 ---
 
-## 1. Persyaratan Sistem & Instalasi
+## Bahasa Indonesia
 
-### Cara Menjalankan Aplikasi Ini
-1.  **Clone / Download** repositori ini ke folder server lokal Anda (misal: `D:\CraftThingy\php-ocr-application-test`).
-2.  Pastikan PHP >= 8.2 terinstal (disertai ekstensi `intl` dan `mbstring` aktif pada `php.ini`).
-3.  Jalankan server pengembangan bawaan CodeIgniter 4:
+Proyek ini adalah contoh aplikasi web berbasis **CodeIgniter 4** yang mengimplementasikan **PaddleOCR secara 100% Client-Side** di dalam browser menggunakan WebAssembly (WASM). 
+
+Arsitektur ini mereduksi beban pemrosesan AI di server PHP Anda dengan memindahkan komputasi ekstraksi teks ke browser client menggunakan ONNX Runtime Web dan OpenCV.js.
+
+### 1. Persyaratan Sistem & Instalasi
+1.  Pastikan PHP >= 8.2 terinstal (dengan ekstensi `intl` dan `mbstring` aktif pada `php.ini`).
+2.  Jalankan server pengembangan lokal:
     ```bash
     php spark serve
     ```
-4.  Buka web browser dan akses:
+3.  Akses web browser di `http://localhost:8080`.
+
+### 2. Cara Menggunakan Client-Side OCR di Proyek PHP Lain
+Untuk memindahkan fitur OCR ini ke proyek PHP Anda yang lain (Laravel, Vanilla PHP, CI3, dll.), ikuti langkah berikut:
+
+1.  **Salin File**:
+    *   Salin berkas `public/js/paddle-ocr-client.js` ke folder asset Javascript Anda.
+    *   Salin seluruh file model AI di dalam folder `public/models/` ke folder publik Anda.
+2.  **Impor Dependensi CDN di HTML/PHP**:
+    ```html
+    <!-- 1. PDF.js (Opsional, untuk membaca PDF) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';</script>
+
+    <!-- 2. ONNX Runtime Web -->
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js"></script>
+
+    <!-- 3. OpenCV WebAssembly Bindings -->
+    <script>
+      window.cv = window.Module = {
+        onRuntimeInitialized: () => { window.isOpencvReady = true; if (window.onOpencvLoaded) window.onOpencvLoaded(); }
+      };
+    </script>
+    <script async src="https://docs.opencv.org/4.5.4/opencv.js"></script>
+
+    <!-- 4. Node.js Environment Shims -->
+    <script>
+      window.process = { env: { NODE_ENV: 'production' }, cwd: () => '/' };
+      window.setImmediate = (fn, ...args) => setTimeout(fn, 0, ...args);
+    </script>
+
+    <!-- 5. PaddleOCR Client Library -->
+    <script src="/assets/js/paddle-ocr-client.js"></script>
     ```
-    http://localhost:8080
+3.  **Panggil OCR Lewat JavaScript**:
+    ```javascript
+    const ocr = new PaddleOCRClient();
+    await ocr.init({
+      detection: '/assets/models/en_PP-OCRv3_det_infer.onnx',
+      recognition: '/assets/models/en_PP-OCRv3_rec_infer.onnx',
+      charactersDictionary: '/assets/models/en_dict.txt'
+    });
+    const result = await ocr.recognize(document.getElementById('my-image'));
+    console.log(result.text);
     ```
 
 ---
 
-## 2. Cara Menggunakan Client-Side OCR di Proyek PHP Lain
+## English
 
-Jika Anda memiliki aplikasi PHP lain (Vanilla PHP, Laravel, CodeIgniter 3/4, Symfony, dll.), Anda bisa memindahkan fitur OCR ini dengan langkah berikut:
+This repository showcases a **CodeIgniter 4** web application demonstrating **100% client-side PaddleOCR** execution directly in the browser via WebAssembly (WASM).
 
-### Langkah A: Salin Berkas Library & Model AI
-Salin folder statis berikut dari proyek ini ke proyek PHP target Anda:
-1.  **Pustaka Javascript**: Salin `public/js/paddle-ocr-client.js` ke folder asset publik JavaScript Anda (misal: `public/assets/js/`).
-2.  **File Model ONNX**: Salin isi folder `public/models/` ke folder publik proyek Anda (misal: `public/assets/models/`). Folder ini berisi:
-    *   `en_PP-OCRv3_det_infer.onnx` (Model Deteksi Teks ~2.4MB)
-    *   `en_PP-OCRv3_rec_infer.onnx` (Model Pengenalan Karakter ~8.9MB)
-    *   `en_dict.txt` (Kamus Karakter)
+This architecture offloads the AI computation/inference overhead from your PHP backend server to the client's web browser using ONNX Runtime Web and OpenCV.js.
 
-### Langkah B: Impor CDN Dependensi pada Halaman HTML/PHP
-Masukkan script berikut ke dalam view HTML/PHP Anda:
+### 1. Requirements & Local Setup
+1.  Ensure you have PHP >= 8.2 installed (with `intl` and `mbstring` extensions enabled in `php.ini`).
+2.  Start the development server:
+    ```bash
+    php spark serve
+    ```
+3.  Navigate to `http://localhost:8080` in your web browser.
 
-```html
-<!-- 1. PDF.js (Wajib jika Anda ingin memindai file PDF) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
-<script>
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
-</script>
+### 2. Implementing Client-Side OCR in Other PHP Projects
+To port the client-side OCR engine into your own PHP project (Laravel, Vanilla PHP, CI3, Symfony, etc.), perform the following steps:
 
-<!-- 2. ONNX Runtime Web (WASM execution engine) -->
-<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js"></script>
+1.  **Copy Assets**:
+    *   Copy the script file `public/js/paddle-ocr-client.js` into your public asset folder.
+    *   Copy the AI models under `public/models/` into your public assets directory.
+2.  **Import CDN Dependencies in your Layout**:
+    ```html
+    <!-- 1. PDF.js (Optional, only if scanning PDF files) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';</script>
 
-<!-- 3. OpenCV WebAssembly (Untuk crop dan pengolahan matriks gambar) -->
-<script>
-  window.cv = window.Module = {
-    onRuntimeInitialized: function() {
-      console.log('OpenCV WASM runtime is ready.');
-      window.isOpencvReady = true;
-      if (window.onOpencvLoaded) window.onOpencvLoaded();
-    }
-  };
-</script>
-<script async src="https://docs.opencv.org/4.5.4/opencv.js"></script>
+    <!-- 2. ONNX Runtime Web -->
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js"></script>
 
-<!-- 4. Environment Shim (Node.js compatibility layer untuk browser) -->
-<script>
-  window.process = {
-    env: { NODE_ENV: 'production' },
-    cwd: function() { return '/'; }
-  };
-  window.setImmediate = window.setImmediate || function(fn, ...args) {
-    return setTimeout(fn, 0, ...args);
-  };
-</script>
+    <!-- 3. OpenCV WebAssembly Bindings -->
+    <script>
+      window.cv = window.Module = {
+        onRuntimeInitialized: () => { window.isOpencvReady = true; if (window.onOpencvLoaded) window.onOpencvLoaded(); }
+      };
+    </script>
+    <script async src="https://docs.opencv.org/4.5.4/opencv.js"></script>
 
-<!-- 5. PaddleOCR Client Library -->
-<script src="/assets/js/paddle-ocr-client.js"></script>
-```
+    <!-- 4. Node.js Environment Shims -->
+    <script>
+      window.process = { env: { NODE_ENV: 'production' }, cwd: () => '/' };
+      window.setImmediate = (fn, ...args) => setTimeout(fn, 0, ...args);
+    </script>
 
-### Langkah C: Panggil Pustaka OCR lewat JavaScript Anda
-Inisialisasi engine dan lakukan pembacaan gambar:
-
-```javascript
-async function runOCR() {
-  // Tunggu sampai OpenCV WASM siap
-  if (!window.isOpencvReady) {
-    await new Promise(resolve => window.onOpencvLoaded = resolve);
-  }
-
-  // 1. Inisialisasi Client
-  const ocr = new window.PaddleOCRClient({
-    verbose: true,
-    maxSideLength: 2000 // Presisi tinggi
-  });
-
-  // 2. Unduh dan Muat Model ONNX secara Asinkron
-  await ocr.init({
-    detection: '/assets/models/en_PP-OCRv3_det_infer.onnx',
-    recognition: '/assets/models/en_PP-OCRv3_rec_infer.onnx',
-    charactersDictionary: '/assets/models/en_dict.txt'
-  });
-
-  // 3. Jalankan OCR pada element <img> atau <canvas>
-  const imgElement = document.getElementById('my-image');
-  const result = await ocr.recognize(imgElement);
-
-  console.log("Full Text:", result.text);
-  console.log("Lines & Coordinates:", result.lines);
-}
-```
-*Catatan: Parameter `result.lines` mengembalikan koordinat geometris `{ x, y, width, height }` yang siap Anda overlay di atas gambar menggunakan CSS `position: absolute`.*
+    <!-- 5. PaddleOCR Client Library -->
+    <script src="/assets/js/paddle-ocr-client.js"></script>
+    ```
+3.  **Execute the OCR Client via JS**:
+    ```javascript
+    const ocr = new PaddleOCRClient();
+    await ocr.init({
+      detection: '/assets/models/en_PP-OCRv3_det_infer.onnx',
+      recognition: '/assets/models/en_PP-OCRv3_rec_infer.onnx',
+      charactersDictionary: '/assets/models/en_dict.txt'
+    });
+    const result = await ocr.recognize(document.getElementById('my-image'));
+    console.log(result.text);
+    ```
