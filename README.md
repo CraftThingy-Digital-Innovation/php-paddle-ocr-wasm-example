@@ -36,10 +36,19 @@ Jika Anda ingin mengintegrasikan fungsionalitas ini ke dalam proyek PHP Anda yan
 
 #### Langkah A: Salin Berkas Library & Model AI
 1.  **Pustaka Javascript**: Salin `public/js/paddle-ocr-client.js` ke folder asset publik JavaScript Anda (misal: `public/assets/js/`).
-2.  **File Model ONNX**: Salin isi folder `public/models/` ke folder publik proyek Anda (misal: `public/assets/models/`). Folder ini berisi:
-    *   `en_PP-OCRv3_det_infer.onnx` (Model Deteksi Teks ~2.4MB)
-    *   `en_PP-OCRv3_rec_infer.onnx` (Model Pengenalan Karakter ~8.9MB)
-    *   `en_dict.txt` (Kamus Karakter)
+2.  **File Model ONNX/ORT**: Salin isi folder `public/models/` ke folder publik proyek Anda (misal: `public/assets/models/`). Folder ini berisi:
+    *   **PP-OCRv3 (Ringan & Cepat)**:
+        *   `en_PP-OCRv3_det_infer.onnx` (Model Deteksi ~2.4MB)
+        *   `en_PP-OCRv3_rec_infer.onnx` (Model Rekognisi ~8.9MB)
+        *   `en_dict.txt` (Kamus V3)
+    *   **PP-OCRv6 (Akurasi Tinggi)**:
+        *   `PP-OCRv6_medium_det.ort` (Model Deteksi ORT ~62.1MB)
+        *   `PP-OCRv6_medium_rec.ort` (Model Rekognisi ORT ~76.6MB)
+        *   `ppocrv6_dict.txt` (Kamus V6)
+
+> [!TIP]
+> Seluruh berkas model teroptimasi di atas dapat diunduh langsung dari repositori model resmi organisasi Anda:
+> **[cty-paddle-ocr-models](https://github.com/CraftThingy-Digital-Innovation/cty-paddle-ocr-models)**.
 
 #### Langkah B: Impor CDN Dependensi pada Halaman HTML/PHP
 Masukkan script berikut ke dalam view HTML/PHP Anda:
@@ -97,11 +106,12 @@ async function runOCR() {
     maxSideLength: 2000 // Presisi tinggi
   });
 
-  // 2. Unduh dan Muat Model ONNX secara Asinkron
+  // 2. Unduh dan Muat Model secara Asinkron
+  // Memilih model PP-OCRv6 (ORT) untuk akurasi tinggi
   await ocr.init({
-    detection: '/assets/models/en_PP-OCRv3_det_infer.onnx',
-    recognition: '/assets/models/en_PP-OCRv3_rec_infer.onnx',
-    charactersDictionary: '/assets/models/en_dict.txt'
+    detection: '/assets/models/PP-OCRv6_medium_det.ort',
+    recognition: '/assets/models/PP-OCRv6_medium_rec.ort',
+    charactersDictionary: '/assets/models/ppocrv6_dict.txt'
   });
 
   // 3. Jalankan OCR pada element <img> atau <canvas>
@@ -147,10 +157,19 @@ To port this client-side OCR engine into your own PHP project (Laravel, Vanilla 
 
 #### Step A: Copy Assets
 1.  **Javascript Library**: Copy the script `public/js/paddle-ocr-client.js` into your public asset folder (e.g., `public/assets/js/`).
-2.  **ONNX AI Models**: Copy all model files inside the `public/models/` folder into your public assets directory (e.g., `public/assets/models/`). This directory includes:
-    *   `en_PP-OCRv3_det_infer.onnx` (Text Detection Model ~2.4MB)
-    *   `en_PP-OCRv3_rec_infer.onnx` (Character Recognition Model ~8.9MB)
-    *   `en_dict.txt` (Character Dictionary Keys)
+2.  **ONNX/ORT AI Models**: Copy all model files inside the `public/models/` folder into your public assets directory (e.g., `public/assets/models/`). This directory includes:
+    *   **PP-OCRv3 (Lightweight & Fast)**:
+        *   `en_PP-OCRv3_det_infer.onnx` (Text Detection Model ~2.4MB)
+        *   `en_PP-OCRv3_rec_infer.onnx` (Character Recognition Model ~8.9MB)
+        *   `en_dict.txt` (V3 Dictionary)
+    *   **PP-OCRv6 (High Accuracy)**:
+        *   `PP-OCRv6_medium_det.ort` (ORT Detection Model ~62.1MB)
+        *   `PP-OCRv6_medium_rec.ort` (ORT Recognition Model ~76.6MB)
+        *   `ppocrv6_dict.txt` (V6 Dictionary)
+
+> [!TIP]
+> All optimized model weights listed above can be downloaded from your organization's official models repository:
+> **[cty-paddle-ocr-models](https://github.com/CraftThingy-Digital-Innovation/cty-paddle-ocr-models)**.
 
 #### Step B: Import CDN Dependencies in your Layout
 Insert the following script tags into your HTML/PHP layout file:
@@ -208,11 +227,11 @@ async function runOCR() {
     maxSideLength: 2000 // High-precision scaling
   });
 
-  // 2. Fetch and load ONNX Models asynchronously
+  // 2. Fetch and load ORT Models asynchronously (loading V6)
   await ocr.init({
-    detection: '/assets/models/en_PP-OCRv3_det_infer.onnx',
-    recognition: '/assets/models/en_PP-OCRv3_rec_infer.onnx',
-    charactersDictionary: '/assets/models/en_dict.txt'
+    detection: '/assets/models/PP-OCRv6_medium_det.ort',
+    recognition: '/assets/models/PP-OCRv6_medium_rec.ort',
+    charactersDictionary: '/assets/models/ppocrv6_dict.txt'
   });
 
   // 3. Scan the image element or canvas
@@ -231,16 +250,18 @@ async function runOCR() {
 ### Bahasa Indonesia
 Proyek ini dikembangkan oleh **CraftThingy Digital Innovation (Alif Nurhidayat)**. Proyek ini dibangun di atas fondasi inovasi open-source berikut:
 1.  **Baidu PaddleOCR**: Model deteksi & pengenalan teks kelas dunia yang menjadi inti dari sistem OCR ini.
-2.  **ppu-paddle-ocr**: Pustaka Node.js yang kami porting, shimming, dan bundle agar dapat berjalan di web browser secara penuh.
-3.  **ONNX Runtime Web (Microsoft)**: Engine eksekusi WebAssembly yang menjalankan model neural network `.onnx` di browser.
-4.  **OpenCV.js**: Pustaka pengolahan citra komputer yang menangani transformasi geometris dan cropping karakter.
-5.  **PDF.js (Mozilla)**: Pustaka rendering dokumen PDF yang memproses halaman dokumen menjadi frame canvas.
+2.  **cty-paddle-ocr**: Pustaka isomorphic mandiri yang kita gunakan untuk menjalankan PaddleOCR di sisi client browser secara stabil dan responsif.
+3.  **cty-paddle-ocr-models**: Repositori model resmi organisasi kita tempat menampung dan mendistribusikan model secara aman.
+4.  **ONNX Runtime Web (Microsoft)**: Engine eksekusi WebAssembly yang menjalankan model neural network di browser.
+5.  **OpenCV.js**: Pustaka pengolahan citra komputer yang menangani transformasi geometris dan cropping karakter.
+6.  **PDF.js (Mozilla)**: Pustaka rendering dokumen PDF yang memproses halaman dokumen menjadi frame canvas.
 
 ### English
 This project is developed by **CraftThingy Digital Innovation (Alif Nurhidayat)**. It is built upon the following open-source projects and innovations:
 1.  **Baidu PaddleOCR**: The world-class OCR system providing the core deep learning models for text detection and recognition.
-2.  **ppu-paddle-ocr**: The server-side Node.js package which we port, shim, and bundle to run inside browser clients.
-3.  **ONNX Runtime Web (Microsoft)**: The WebAssembly execution runtime that powers the `.onnx` model inference in browser clients.
-4.  **OpenCV.js**: The computer vision engine handling character cropping and geometry conversions.
-5.  **PDF.js (Mozilla)**: The document rendering library enabling multi-page PDF scanning inside the browser canvas.
+2.  **cty-paddle-ocr**: Our decoupled isomorphic library running text detection and recognition inside the browser.
+3.  **cty-paddle-ocr-models**: Our official models repository hosting large neural network weight files.
+4.  **ONNX Runtime Web (Microsoft)**: The WebAssembly execution runtime that powers model inference in browser clients.
+5.  **OpenCV.js**: The computer vision engine handling character cropping and geometry conversions.
+6.  **PDF.js (Mozilla)**: The document rendering library enabling multi-page PDF scanning inside the browser canvas.
 
