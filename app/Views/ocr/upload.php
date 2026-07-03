@@ -49,15 +49,24 @@
                     </div>
                 </div>
 
-                <!-- Selected File Display -->
-                <div id="file-details" class="hidden mt-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700/50 inline-flex items-center space-x-3 text-left max-w-md mx-auto">
-                    <div id="file-icon-box" class="h-10 w-10 rounded-lg flex items-center justify-center text-lg text-white">
-                        <i class="fa-solid fa-file"></i>
-                    </div>
-                    <div class="overflow-hidden">
-                        <p id="file-name" class="font-medium text-slate-200 text-sm truncate">filename.pdf</p>
-                        <p id="file-size" class="text-xs text-slate-500">0 KB</p>
-                    </div>
+            <!-- Model Selection Dropdown -->
+            <div class="mt-6 max-w-md mx-auto">
+                <label for="model-selector" class="block text-sm font-semibold text-slate-400 mb-2 text-center">Pilih Model AI OCR:</label>
+                <select name="model" id="model-selector" class="w-full bg-slate-900/60 border border-slate-700/50 text-sm text-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:border-blue-500 font-semibold transition-all shadow-inner">
+                    <option value="v3">PP-OCR v3 (Default - Cepat & Ringan)</option>
+                    <option value="v6_ort">PP-OCR v6 (ORT - Teroptimasi & Sangat Cepat)</option>
+                    <option value="v6_onnx">PP-OCR v6 (ONNX - Standar)</option>
+                </select>
+            </div>
+
+            <!-- Selected File Display -->
+            <div id="file-details" class="hidden mt-6 p-4 rounded-xl bg-slate-800/50 border border-slate-700/50 inline-flex items-center space-x-3 text-left max-w-md mx-auto w-full justify-center">
+                <div id="file-icon-box" class="h-10 w-10 rounded-lg flex items-center justify-center text-lg text-white">
+                    <i class="fa-solid fa-file"></i>
+                </div>
+                <div class="overflow-hidden">
+                    <p id="file-name" class="font-medium text-slate-200 text-sm truncate max-w-[200px]">filename.pdf</p>
+                    <p id="file-size" class="text-xs text-slate-500">0 KB</p>
                 </div>
             </div>
 

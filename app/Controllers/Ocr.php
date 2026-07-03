@@ -46,9 +46,10 @@ class Ocr extends Controller
 
         $publicUrl = base_url('uploads/' . $newName);
         $isPdf = $mimeType === 'application/pdf';
+        $model = $this->request->getPost('model') ?? 'v3';
 
         // Redirect directly to visualization page where OCR will run client-side in the browser
-        return redirect()->to(site_url("ocr/job/{$newName}?file=" . urlencode($publicUrl) . "&pdf=" . ($isPdf ? '1' : '0')));
+        return redirect()->to(site_url("ocr/job/{$newName}?file=" . urlencode($publicUrl) . "&pdf=" . ($isPdf ? '1' : '0') . "&model=" . urlencode($model)));
     }
 
     /**
@@ -58,6 +59,7 @@ class Ocr extends Controller
     {
         $fileUrl = $this->request->getGet('file');
         $isPdf = $this->request->getGet('pdf') === '1';
+        $model = $this->request->getGet('model') ?? 'v3';
 
         if (empty($fileUrl)) {
             return redirect()->to(site_url('/'))->with('error', 'File URL tidak ditemukan.');
@@ -66,7 +68,8 @@ class Ocr extends Controller
         return view('ocr/result', [
             'fileName' => $fileName,
             'fileUrl'  => $fileUrl,
-            'isPdf'    => $isPdf
+            'isPdf'    => $isPdf,
+            'model'    => $model
         ]);
     }
 }

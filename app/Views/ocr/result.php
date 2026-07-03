@@ -45,9 +45,9 @@
             <div class="flex items-center space-x-1.5">
                 <span class="text-xs text-slate-400 font-semibold hidden sm:inline">Model AI:</span>
                 <select id="model-selector" onchange="changeOcrModel()" class="bg-slate-950 border border-slate-800 text-xs text-slate-300 rounded-lg px-2.5 py-1 focus:outline-none focus:border-blue-500 font-semibold transition-all">
-                    <option value="v3">PP-OCR v3 (Default)</option>
-                    <option value="v6_ort">PP-OCR v6 (ORT - Cepat)</option>
-                    <option value="v6_onnx">PP-OCR v6 (ONNX)</option>
+                    <option value="v3" <?= $model === 'v3' ? 'selected' : '' ?>>PP-OCR v3 (Default)</option>
+                    <option value="v6_ort" <?= $model === 'v6_ort' ? 'selected' : '' ?>>PP-OCR v6 (ORT - Cepat)</option>
+                    <option value="v6_onnx" <?= $model === 'v6_onnx' ? 'selected' : '' ?>>PP-OCR v6 (ONNX)</option>
                 </select>
             </div>
         </div>
@@ -194,7 +194,7 @@
     let hasBorders = true;
     let currentScale = 1.25; // PDF rendering zoom scale
     let pdfDoc = null;
-    let currentModelType = 'v3';
+    let currentModelType = '<?= esc($model) ?>';
 
     // Document name extraction
     try {
