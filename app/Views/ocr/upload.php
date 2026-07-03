@@ -50,33 +50,48 @@
                 </div>
             </div>
 
-            <!-- Model Selection Dropdown -->
-            <div class="mt-6 max-w-md mx-auto">
-                <label for="model-selector" class="block text-sm font-semibold text-slate-400 mb-2 text-center">Pilih Model AI OCR:</label>
-                <select name="model" id="model-selector" class="w-full bg-slate-900/60 border border-slate-700/50 text-sm text-slate-200 rounded-xl px-4 py-3.5 focus:outline-none focus:border-blue-500 font-semibold transition-all shadow-inner">
-                    <option value="v3">PP-OCR v3 (Default - Cepat & Ringan)</option>
-                    <option value="v6_ort">PP-OCR v6 (ORT - Teroptimasi & Sangat Cepat)</option>
-                    <option value="v6_onnx">PP-OCR v6 (ONNX - Standar)</option>
-                </select>
-            </div>
-
-            <!-- Selected File Display -->
-            <div id="file-details" class="hidden mt-6 p-4 rounded-xl bg-slate-800/50 border border-slate-700/50 inline-flex items-center space-x-3 text-left max-w-md mx-auto w-full justify-center">
-                <div id="file-icon-box" class="h-10 w-10 rounded-lg flex items-center justify-center text-lg text-white">
-                    <i class="fa-solid fa-file"></i>
+            <!-- Controls Container (Symmetric, aligned edges) -->
+            <div class="mt-8 max-w-xl mx-auto space-y-6">
+                
+                <!-- Model Selection Dropdown -->
+                <div class="space-y-2">
+                    <label for="model-selector" class="block text-xs font-bold uppercase tracking-wider text-slate-400">Pilih Model AI OCR</label>
+                    <div class="relative flex items-center">
+                        <div class="absolute left-4 text-slate-500 pointer-events-none">
+                            <i class="fa-solid fa-cpu text-blue-400"></i>
+                        </div>
+                        <select name="model" id="model-selector" class="w-full bg-slate-950/80 border border-slate-800 text-sm text-slate-200 rounded-xl pl-11 pr-10 py-3.5 focus:outline-none focus:border-blue-500 font-semibold transition-all appearance-none cursor-pointer shadow-inner">
+                            <option value="v3">PP-OCR v3 (Default - Cepat & Ringan)</option>
+                            <option value="v6_ort">PP-OCR v6 (ORT - Teroptimasi & Sangat Cepat)</option>
+                            <option value="v6_onnx">PP-OCR v6 (ONNX - Standar)</option>
+                        </select>
+                        <div class="absolute right-4 text-slate-500 pointer-events-none">
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
                 </div>
-                <div class="overflow-hidden">
-                    <p id="file-name" class="font-medium text-slate-200 text-sm truncate max-w-[200px]">filename.pdf</p>
-                    <p id="file-size" class="text-xs text-slate-500">0 KB</p>
-                </div>
-            </div>
 
-            <!-- Submit Button -->
-            <div class="mt-8 flex justify-center">
-                <button type="submit" id="submit-btn" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-blue-500/35 active:scale-95 transition-all flex items-center justify-center space-x-2">
-                    <span>Mulai Proses OCR</span>
-                    <i class="fa-solid fa-arrow-right"></i>
-                </button>
+                <!-- Selected File Display -->
+                <div id="file-details" class="hidden p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between">
+                    <div class="flex items-center space-x-3 overflow-hidden">
+                        <div id="file-icon-box" class="h-10 w-10 rounded-lg flex items-center justify-center text-lg text-white shrink-0">
+                            <i class="fa-solid fa-file"></i>
+                        </div>
+                        <div class="overflow-hidden w-full">
+                            <p id="file-name" class="font-medium text-slate-200 text-sm truncate max-w-[240px] sm:max-w-xs">filename.pdf</p>
+                            <p id="file-size" class="text-xs text-slate-500">0 KB</p>
+                        </div>
+                    </div>
+                    <span class="text-xs font-semibold px-2.5 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-md shrink-0">Siap Diproses</span>
+                </div>
+
+                <!-- Submit Button -->
+                <div>
+                    <button type="submit" id="submit-btn" class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-blue-500/35 active:scale-95 transition-all flex items-center justify-center space-x-2">
+                        <span>Mulai Proses OCR</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
             </div>
         </form>
     </div>
