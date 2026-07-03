@@ -40,6 +40,16 @@
             <span class="h-4 w-px bg-slate-800"></span>
             <span id="doc-title" class="text-sm font-semibold text-slate-200 truncate max-w-xs md:max-w-md">Dokumen</span>
             <span class="px-2 py-0.5 text-[10px] font-extrabold bg-blue-600/20 text-blue-400 border border-blue-500/25 rounded-md uppercase tracking-wider">Client-Side WASM</span>
+            <span class="h-4 w-px bg-slate-800"></span>
+            <!-- Model Selection Dropdown -->
+            <div class="flex items-center space-x-1.5">
+                <span class="text-xs text-slate-400 font-semibold hidden sm:inline">Model AI:</span>
+                <select id="model-selector" onchange="changeOcrModel()" class="bg-slate-950 border border-slate-800 text-xs text-slate-300 rounded-lg px-2.5 py-1 focus:outline-none focus:border-blue-500 font-semibold transition-all">
+                    <option value="v3">PP-OCR v3 (Default)</option>
+                    <option value="v6_ort">PP-OCR v6 (ORT - Cepat)</option>
+                    <option value="v6_onnx">PP-OCR v6 (ONNX)</option>
+                </select>
+            </div>
         </div>
         
         <div class="flex items-center space-x-3">
@@ -184,6 +194,7 @@
     let hasBorders = true;
     let currentScale = 1.25; // PDF rendering zoom scale
     let pdfDoc = null;
+    let currentModelType = 'v3';
 
     // Document name extraction
     try {
@@ -219,15 +230,34 @@
             });
 
             // Initialize models pointing to local static URLs
-            await ocrClient.init({
-                detection: '<?= base_url("models/en_PP-OCRv3_det_infer.onnx") ?>',
-                recognition: '<?= base_url("models/en_PP-OCRv3_rec_infer.onnx") ?>',
-                charactersDictionary: '<?= base_url("models/en_dict.txt") ?>'
-            });
+            let modelConfig = {};
+            if (currentModelType === 'v3') {
+                modelConfig = {
+                    detection: '<?= base_url("models/en_PP-OCRv3_det_infer.onnx") ?>',
+                    recognition: '<?= base_url("models/en_PP-OCRv3_rec_infer.onnx") ?>',
+                    charactersDictionary: '<?= base_url("models/en_dict.txt") ?>'
+                };
+            } else if (currentModelType === 'v6_onnx') {
+                modelConfig = {
+                    detection: '<?= base_url("models/PP-OCRv6_medium_det.onnx") ?>',
+                    recognition: '<?= base_url("models/PP-OCRv6_medium_rec.onnx") ?>',
+                    charactersDictionary: '<?= base_url("models/ppocrv6_dict.txt") ?>'
+                };
+            } else if (currentModelType === 'v6_ort') {
+                modelConfig = {
+                    detection: '<?= base_url("models/PP-OCRv6_medium_det.ort") ?>',
+                    recognition: '<?= base_url("models/PP-OCRv6_medium_rec.ort") ?>',
+                    charactersDictionary: '<?= base_url("models/ppocrv6_dict.txt") ?>'
+                };
+            }
+
+            await ocrClient.init(modelConfig);
 
             updateLoader('Menginisialisasi File...', 80);
 
+            jobResults = []; // Clear previous results
             if (!isPdf) {
+                document.getElementById('img-overlay-layer').innerHTML = '';
                 await processImageOcr();
             } else {
                 await processPdfOcr();
@@ -600,6 +630,24 @@
         navigator.clipboard.writeText(text).then(() => {
             alert('Struktur data JSON berhasil disalin!');
         });
+    }
+
+    async function changeOcrModel() {
+        currentModelType = document.getElementById('model-selector').value;
+        
+        // Transition to loading screen
+        const loader = document.getElementById('loader-screen');
+        loader.classList.remove('hidden');
+        loader.style.display = 'flex'; // Ensure active flex layout
+        
+        document.getElementById('loader-title').textContent = 'Mengganti Model OCR...';
+        document.getElementById('loader-desc').textContent = 'Mengunduh model baru dan menginisialisasi WebAssembly runtime.';
+        document.getElementById('loader-progress').parentElement.classList.remove('hidden');
+        document.getElementById('loader-status').classList.remove('hidden');
+        document.getElementById('loader-error').classList.add('hidden');
+        
+        // Restart the engine
+        await startOcrEngine();
     }
 
     // Trigger initialization on load
