@@ -87,11 +87,11 @@
         
         <!-- Viewer Pane (Left) -->
         <div class="flex-grow overflow-y-auto p-6 flex flex-col items-center custom-scroll" id="viewer-pane">
-            <div id="viewer-container" class="relative max-w-full">
+            <div id="viewer-container" class="relative w-full max-w-3xl lg:max-w-4xl">
                 <!-- If it is an image, render img template -->
                 <?php if (!$isPdf) : ?>
-                    <div id="img-wrapper" class="relative select-none rounded-lg overflow-hidden shadow-2xl bg-white border border-slate-800">
-                        <img id="source-img" src="<?= $fileUrl ?>" class="block max-w-full h-auto transition-opacity duration-300 animate-pulse" style="opacity: 0.15;" />
+                    <div id="img-wrapper" class="relative select-none rounded-lg overflow-hidden shadow-2xl bg-white border border-slate-800 w-full">
+                        <img id="source-img" src="<?= $fileUrl ?>" class="block w-full h-auto transition-opacity duration-300 animate-pulse" style="opacity: 0.15;" />
                         <div id="img-overlay-layer" class="absolute inset-0 z-10 pointer-events-auto"></div>
                     </div>
                 <?php else : ?>
