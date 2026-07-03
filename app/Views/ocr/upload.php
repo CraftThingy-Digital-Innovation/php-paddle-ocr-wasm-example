@@ -48,6 +48,7 @@
                         </p>
                     </div>
                 </div>
+            </div>
 
             <!-- Model Selection Dropdown -->
             <div class="mt-6 max-w-md mx-auto">
