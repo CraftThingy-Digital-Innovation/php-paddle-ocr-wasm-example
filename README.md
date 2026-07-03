@@ -1,69 +1,108 @@
-# CodeIgniter 4 Application Starter
+# PaddleOCR Client-Side WASM (CodeIgniter 4 Integration)
 
-## What is CodeIgniter?
+Repositori ini berisi aplikasi web berbasis **CodeIgniter 4** yang mengimplementasikan **PaddleOCR secara 100% Client-Side (di dalam Browser)** menggunakan WebAssembly (WASM). 
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+Dengan arsitektur ini, server PHP Anda tidak perlu memproses AI/OCR. Semua beban komputasi pemindaian gambar/PDF diringankan ke browser client menggunakan ONNX Runtime Web dan OpenCV.js.
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+---
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+## 1. Persyaratan Sistem & Instalasi
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+### Cara Menjalankan Aplikasi Ini
+1.  **Clone / Download** repositori ini ke folder server lokal Anda (misal: `D:\CraftThingy\php-ocr-application-test`).
+2.  Pastikan PHP >= 8.2 terinstal (disertai ekstensi `intl` dan `mbstring` aktif pada `php.ini`).
+3.  Jalankan server pengembangan bawaan CodeIgniter 4:
+    ```bash
+    php spark serve
+    ```
+4.  Buka web browser dan akses:
+    ```
+    http://localhost:8080
+    ```
 
-## Installation & updates
+---
 
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
+## 2. Cara Menggunakan Client-Side OCR di Proyek PHP Lain
 
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
+Jika Anda memiliki aplikasi PHP lain (Vanilla PHP, Laravel, CodeIgniter 3/4, Symfony, dll.), Anda bisa memindahkan fitur OCR ini dengan langkah berikut:
 
-## Setup
+### Langkah A: Salin Berkas Library & Model AI
+Salin folder statis berikut dari proyek ini ke proyek PHP target Anda:
+1.  **Pustaka Javascript**: Salin `public/js/paddle-ocr-client.js` ke folder asset publik JavaScript Anda (misal: `public/assets/js/`).
+2.  **File Model ONNX**: Salin isi folder `public/models/` ke folder publik proyek Anda (misal: `public/assets/models/`). Folder ini berisi:
+    *   `en_PP-OCRv3_det_infer.onnx` (Model Deteksi Teks ~2.4MB)
+    *   `en_PP-OCRv3_rec_infer.onnx` (Model Pengenalan Karakter ~8.9MB)
+    *   `en_dict.txt` (Kamus Karakter)
 
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
+### Langkah B: Impor CDN Dependensi pada Halaman HTML/PHP
+Masukkan script berikut ke dalam view HTML/PHP Anda:
 
-## Important Change with index.php
+```html
+<!-- 1. PDF.js (Wajib jika Anda ingin memindai file PDF) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+<script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+</script>
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+<!-- 2. ONNX Runtime Web (WASM execution engine) -->
+<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js"></script>
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+<!-- 3. OpenCV WebAssembly (Untuk crop dan pengolahan matriks gambar) -->
+<script>
+  window.cv = window.Module = {
+    onRuntimeInitialized: function() {
+      console.log('OpenCV WASM runtime is ready.');
+      window.isOpencvReady = true;
+      if (window.onOpencvLoaded) window.onOpencvLoaded();
+    }
+  };
+</script>
+<script async src="https://docs.opencv.org/4.5.4/opencv.js"></script>
 
-**Please** read the user guide for a better explanation of how CI4 works!
+<!-- 4. Environment Shim (Node.js compatibility layer untuk browser) -->
+<script>
+  window.process = {
+    env: { NODE_ENV: 'production' },
+    cwd: function() { return '/'; }
+  };
+  window.setImmediate = window.setImmediate || function(fn, ...args) {
+    return setTimeout(fn, 0, ...args);
+  };
+</script>
 
-## Repository Management
+<!-- 5. PaddleOCR Client Library -->
+<script src="/assets/js/paddle-ocr-client.js"></script>
+```
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
+### Langkah C: Panggil Pustaka OCR lewat JavaScript Anda
+Inisialisasi engine dan lakukan pembacaan gambar:
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
+```javascript
+async function runOCR() {
+  // Tunggu sampai OpenCV WASM siap
+  if (!window.isOpencvReady) {
+    await new Promise(resolve => window.onOpencvLoaded = resolve);
+  }
 
-## Server Requirements
+  // 1. Inisialisasi Client
+  const ocr = new window.PaddleOCRClient({
+    verbose: true,
+    maxSideLength: 2000 // Presisi tinggi
+  });
 
-PHP version 8.2 or higher is required, with the following extensions installed:
+  // 2. Unduh dan Muat Model ONNX secara Asinkron
+  await ocr.init({
+    detection: '/assets/models/en_PP-OCRv3_det_infer.onnx',
+    recognition: '/assets/models/en_PP-OCRv3_rec_infer.onnx',
+    charactersDictionary: '/assets/models/en_dict.txt'
+  });
 
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
+  // 3. Jalankan OCR pada element <img> atau <canvas>
+  const imgElement = document.getElementById('my-image');
+  const result = await ocr.recognize(imgElement);
 
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - The end of life date for PHP 8.1 was December 31, 2025.
-> - If you are still using below PHP 8.2, you should upgrade immediately.
-> - The end of life date for PHP 8.2 will be December 31, 2026.
-
-Additionally, make sure that the following extensions are enabled in your PHP:
-
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+  console.log("Full Text:", result.text);
+  console.log("Lines & Coordinates:", result.lines);
+}
+```
+*Catatan: Parameter `result.lines` mengembalikan koordinat geometris `{ x, y, width, height }` yang siap Anda overlay di atas gambar menggunakan CSS `position: absolute`.*
