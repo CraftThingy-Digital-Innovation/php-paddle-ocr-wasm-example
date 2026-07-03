@@ -516,6 +516,9 @@
         // Populate sidebars
         document.getElementById('extracted-text-area').value = jobResults.map(page => `=== HALAMAN ${page.page} ===\n${page.text}`).join('\n\n');
         document.getElementById('json-raw-area').textContent = JSON.stringify(jobResults, null, 2);
+
+        // Force a layout recalculation now that the workspace is visible
+        window.dispatchEvent(new Event('resize'));
     }
 
     function applyStyleToElement(el) {
